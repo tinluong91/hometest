@@ -1,0 +1,43 @@
+generator client {
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "rhel-openssl-1.0.x", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id       String    @id @default(auto()) @map("_id") @db.ObjectId // The id of this user
+    name     String
+    email    String    @unique
+    posts    Post[]
+    comments Comment[]
+
+    @@map("user")
+}
+
+model Post {
+    id       String @id @default(auto()) @map("_id") @db.ObjectId // The id of this post
+    title    String
+    content  String
+    authorId String @db.ObjectId
+
+    author   User      @relation(fields: [authorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    comments Comment[]
+
+    @@map("post")
+}
+
+model Comment {
+    id       String @id @default(auto()) @map("_id") @db.ObjectId // The id of this comment
+    content  String
+    postId   String @db.ObjectId
+    authorId String @db.ObjectId
+
+    post   Post @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    author User @relation(fields: [authorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+    @@map("comment")
+}
